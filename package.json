@@ -1,0 +1,18 @@
+{
+  "name": "personal-chatbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nlpjs/core": "^5.0.0-alpha.5",
+    "@nlpjs/lang-es": "^5.0.0-alpha.5",
+    "@nlpjs/nlp": "^5.0.0-alpha.5",
+    "whatsapp-web.js": "^1.34.6"
+  }
+}
