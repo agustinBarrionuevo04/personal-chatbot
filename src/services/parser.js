@@ -16,3 +16,26 @@ async function trainNLP() {
     manager.save();
 
 }
+
+async function parseMessage(msg) {
+  const response = await manager.process('es', msg);
+
+  if (response.intent === 'None') {
+    print('No se pudo entender el mensaje. Intenta: Gaste 100 en comida');
+    return null;
+  }
+
+  const amoutEntity = response.entities.find(e => e.entity === 'number');
+
+  return {
+    intent: response.intent,
+    amount: amountEntity ? amountEntity.resolution.value : null,
+    msg: response.utterance,
+    score: response.score
+  }
+}
+
+module.exports = {
+  trainNLP,
+  parseMessage
+};
