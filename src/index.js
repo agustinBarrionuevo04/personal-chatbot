@@ -1,34 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-
-function loadEnvFallback() {
-    try {
-        const envPath = path.resolve(__dirname, '..', '.env');
-        if (!fs.existsSync(envPath)) return;
-        const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
-        lines.forEach(line => {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith('#')) return;
-            const [key, ...valueParts] = trimmed.split('=');
-            const value = valueParts.join('=').trim();
-            if (!process.env[key] && value) {
-                process.env[key] = value;
-            }
-        });
-    } catch (err) {
-        console.warn('No se pudo cargar el archivo .env:', err.message);
-    }
-}
-
-try {
-    require('dotenv').config();
-} catch (err) {
-    loadEnvFallback();
-}
-
 const { trainNLP, parseMessage } = require('./services/parser');
 const { client } = require('./adapters/whatsapp');
 const { appendExpense } = require('./adapters/googleSheets');
+
+require('dotenv').config();
 
 async function main() {
     console.log('Entrenando el modelo...');
