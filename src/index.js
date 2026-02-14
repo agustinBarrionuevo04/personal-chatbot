@@ -17,13 +17,29 @@ async function main() {
             return Math.max(max, chatTimestamp);
         }, 0);
 
-        client.on('message', async msg => {
+        client.on('message_create', async msg => {
+            // Solo procesar mensajes que YO envío
+            if (!msg.fromMe) {
+                return;
+            }
+            
+            // Solo procesar AUTO-MENSAJES (mensajes que me envío a mí mismo)
+            if (msg.from !== msg.to) {
+                return;
+            }
+            
+            // Evitar que el bot procese sus propias respuestas (loop infinito)
+            if (msg.body.startsWith('Gasto registrado:') || msg.body.startsWith('¡Hola!')) {
+                return;
+            }
+            
             // Ignorar mensajes con timestamp previo al último conocido al iniciar la sesión
             if (msg.timestamp && msg.timestamp <= latestKnownTimestamp) {
                 return;
             }
             latestKnownTimestamp = Math.max(latestKnownTimestamp, msg.timestamp || latestKnownTimestamp);
 
+            console.log(`Procesando mi mensaje: ${msg.body}`);
             const res = await parseMessage(msg.body);
             if (res && res.intent === 'gasto.register' && res.amount) {
                 try {
