@@ -34,6 +34,9 @@ async function main() {
                     console.error('Error al registrar el gasto:', error);
                     msg.reply('Hubo un error al registrar el gasto. Intenta nuevamente.');
                 }
+            } else if (res && res.intent === 'greeting.hello') {
+                //msg.reply("Hola fidel cola rota, ¿en qué puedo ayudarte? Puedo registrar gastos si me dices: \"gaste X en concepto\"");
+                msg.reply('¡Hola! ¿En qué puedo ayudarte? Puedo registrar gastos si me dices: "gaste X en concepto"');
             }
         });
     });

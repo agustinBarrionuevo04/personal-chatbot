@@ -15,6 +15,8 @@ const manager = new Nlp({
 
 async function trainNLP() {
   manager.addDocument('es', 'Hola', 'greeting.hello');
+  manager.addDocument('es', '¿Cómo estás?', 'greeting.hello');
+  manager.addDocument('es', 'Hola, ¿qué tal?', 'greeting.hello');
 
   manager.addDocument('es', 'gaste %number% en %concepto%','gasto.register');
   manager.addDocument('es', 'anota %number% en %concepto%', 'gasto.register');
