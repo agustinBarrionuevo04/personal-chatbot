@@ -13,8 +13,8 @@ async function main() {
 
         const chats = await client.getChats();
         let latestKnownTimestamp = chats.reduce((max, chat) => {
-            const chatTimestamp = chat.timestamp || (chat.lastMessage ? chat.lastMessage.timestamp : 0);
-            return Math.max(max, chatTimestamp || 0);
+            const chatTimestamp = chat.timestamp;
+            return Math.max(max, chatTimestamp);
         }, 0);
 
         client.on('message', async msg => {
@@ -27,10 +27,9 @@ async function main() {
             const res = await parseMessage(msg.body);
             if (res && res.intent === 'gasto.register' && res.amount) {
                 try {
-                    //await saveToSheets(res.amount, res.msg);
-                    //llamar a la api de google sheets para registrar el gasto
                     await appendExpense(res.amount, res.msg);
                     msg.reply(`Gasto registrado: ${res.amount} en ${res.msg}`);
+                    console.log("Se registró el gasto:", res.amount, res.msg);
                 } catch (error) {
                     console.error('Error al registrar el gasto:', error);
                     msg.reply('Hubo un error al registrar el gasto. Intenta nuevamente.');

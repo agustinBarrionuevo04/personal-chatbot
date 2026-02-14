@@ -45,25 +45,32 @@ async function trainNLP() {
 async function parseMessage(msg) {
   const response = await manager.process('es', msg);
 
+  // Validar que el NLP entienda la intención del mensaje
   if (response.intent === 'None') {
     console.log('No se pudo entender el mensaje. Intenta: Gaste 100 en comida');
     return null;
   }
 
-  const amountEntity = Array.isArray(response.entities)
-    ? response.entities.find((e) => e.entity === 'number')
-    : null;
+  // Extraer la entidad de cantidad (número) del NLP
+  let amountEntity = null;
+  if (Array.isArray(response.entities)) {
+    amountEntity = response.entities.find((e) => e.entity === 'number');
+  }
 
+  // Extraer número directamente del texto como fallback
   const amountFromText = (() => {
     if (!msg) return null;
     const numberMatch = msg.match(/-?\d+(?:[.,]\d+)?/);
     return numberMatch ? parseFloat(numberMatch[0].replace(',', '.')) : null;
   })();
 
+  // Extraer el concepto (palabra después de "en") del mensaje
+  const concept = response.utterance.match(/en\s+(\w+)/)?.[1] || "No se identifico el concepto";
+
   return {
     intent: response.intent,
-    amount: amountEntity ? amountEntity.resolution.value : amountFromText,
-    msg: response.utterance,
+    amount: amountEntity?.resolution.value ?? amountFromText,
+    msg: concept,
     score: response.score
   }
 }

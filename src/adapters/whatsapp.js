@@ -5,7 +5,6 @@ const client = new Client({
     // LocalAuth guarda la sesión en una carpeta local (.wwebjs_auth)
     authStrategy: new LocalAuth(),
     puppeteer: {
-        // En Linux a veces es necesario pasar estos flags para evitar errores de sandbox
         args: ['--no-sandbox', '--disable-setuid-sandbox'],
     }
 });
