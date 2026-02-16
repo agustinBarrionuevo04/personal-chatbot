@@ -1,9 +1,14 @@
 const { Nlp } = require('@nlpjs/nlp');
 const { containerBootstrap } = require('@nlpjs/core');
 const { LangEs } = require('@nlpjs/lang-es');
+const fs = require('fs');
+const path = require('path');
 
 const container = containerBootstrap();
 container.use(LangEs);
+
+const MODEL_PATH = path.join(__dirname, '../../models');
+const MODEL_FILE = path.join(MODEL_PATH, 'model.nlp');
 
 const manager = new Nlp({
   container,
@@ -13,7 +18,28 @@ const manager = new Nlp({
   forceNER: true
 });
 
+async function modelExists() {
+  // Asegurar que existe la carpeta de modelos
+  if (!fs.existsSync(MODEL_PATH)) {
+    console.log('Creando carpeta de modelos...');
+    fs.mkdirSync(MODEL_PATH, { recursive: true });
+    return false;
+  }
+  
+  // Verificar si existe el archivo del modelo
+  return fs.existsSync(MODEL_FILE);
+}
+
 async function trainNLP() {
+  if(await modelExists()){
+    console.log('Cargando modelo existente desde:', MODEL_FILE);
+    const modelData = JSON.parse(fs.readFileSync(MODEL_FILE, 'utf8'));
+    await manager.import(modelData);
+    return;
+  }
+
+  console.log('Entrenando modelo por primera vez...');
+
   manager.addDocument('es', 'Hola', 'greeting.hello');
   manager.addDocument('es', '¿Cómo estás?', 'greeting.hello');
   manager.addDocument('es', 'Hola, ¿qué tal?', 'greeting.hello');
@@ -36,12 +62,19 @@ async function trainNLP() {
   );
 
   manager.addDocument('es', '¿Cuánto gasté en %concepto%?', 'gasto.query');
+  manager.addDocument('es', 'cuánto gasté ayer', 'gasto.query');
+  manager.addDocument('es', 'gastos de ayer', 'gasto.query');
+  manager.addDocument('es', 'decime el total de ayer', 'gasto.query');
+  manager.addDocument('es', 'cuánto llevo gastado hoy', 'gasto.query');
+  
   manager.addDocument('es', '¿Cuánto gasté en total?', 'gasto.queryTotal');
   manager.addDocument('es', '¿Cuánto gasté en %concepto% el mes pasado?', 'gasto.queryLastMonth');
 
-    await manager.train();
-    //await manager.save();
-
+  await manager.train();
+  console.log('Guardando modelo en:', MODEL_FILE);
+  const modelData = manager.export();
+  fs.writeFileSync(MODEL_FILE, JSON.stringify(modelData), 'utf8');
+  console.log('Modelo entrenado y guardado exitosamente');
 }
 
 async function parseMessage(msg) {

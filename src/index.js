@@ -1,6 +1,6 @@
 const { trainNLP, parseMessage } = require('./services/parser');
 const { client } = require('./adapters/whatsapp');
-const { appendExpense } = require('./adapters/googleSheets');
+const { appendExpense, sumAmountDates } = require('./adapters/googleSheets');
 
 require('dotenv').config();
 
@@ -18,28 +18,21 @@ async function main() {
         }, 0);
 
         client.on('message_create', async msg => {
-            // Solo procesar mensajes que YO envío
-            if (!msg.fromMe) {
+            // Solo procesar mensajes que yO envío y solo procesar AUTO-MENSAJES
+            if (!msg.fromMe || msg.from !== msg.to) {
                 return;
             }
-            
-            // Solo procesar AUTO-MENSAJES (mensajes que me envío a mí mismo)
-            if (msg.from !== msg.to) {
-                return;
-            }
-            
-            // Evitar que el bot procese sus propias respuestas (loop infinito)
+            // Evitar que el bot procese sus propias respuestas 
             if (msg.body.startsWith('Gasto registrado:') || msg.body.startsWith('¡Hola!')) {
                 return;
             }
-            
             // Ignorar mensajes con timestamp previo al último conocido al iniciar la sesión
             if (msg.timestamp && msg.timestamp <= latestKnownTimestamp) {
                 return;
             }
             latestKnownTimestamp = Math.max(latestKnownTimestamp, msg.timestamp || latestKnownTimestamp);
 
-            console.log(`Procesando mi mensaje: ${msg.body}`);
+            console.log(`Procesando mensaje: ${msg.body}`);
             const res = await parseMessage(msg.body);
             if (res && res.intent === 'gasto.register' && res.amount) {
                 try {
@@ -53,6 +46,20 @@ async function main() {
             } else if (res && res.intent === 'greeting.hello') {
                 //msg.reply("Hola fidel cola rota, ¿en qué puedo ayudarte? Puedo registrar gastos si me dices: \"gaste X en concepto\"");
                 msg.reply('¡Hola! ¿En qué puedo ayudarte? Puedo registrar gastos si me dices: "gaste X en concepto"');
+            }else if (res && res.intent === 'gasto.query') {
+                let searchDate = new Date();
+                if(msg.body.toLowerCase().includes('ayer')){
+                    searchDate.setDate(searchDate.getDate() - 1);
+                }
+                try {
+                    const total = await sumAmountDates(searchDate);
+                    const dateStr = searchDate.toLocaleDateString('es-AR');
+                    msg.reply(`El total de gastos para ${dateStr} es: ${total}`);
+                    console.log(`Total de gastos para ${dateStr}:`, total);
+                }catch(error){
+                    console.error('Error al consultar los gastos:', error);
+                    msg.reply('Hubo un error al consultar los gastos. Intenta nuevamente.');
+                }
             }
         });
     });
