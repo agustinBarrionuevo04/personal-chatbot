@@ -23,8 +23,24 @@ describe('test add_expense function in the register module', () => {
         expect(mockMsg.reply).toHaveBeenCalledWith(`Gasto registrado: ${amount} en ${concept}`);
     });
 
+    it('error while registering an expense', async () => {
+        const error = new Error('Error al registrar el gasto');
+        appendExpense.mockRejectedValue(error);
+        const amount = 100;
+        const concept = 'comida' ;
+        await add_expense(mockMsg, amount, concept);
 
+        expect(appendExpense).toHaveBeenCalledWith(amount, concept);
+        expect(mockMsg.reply).toHaveBeenCalledWith('Hubo un error al registrar el gasto. Intenta nuevamente.');
+    });
 
+    it('parameters validation', async () => {
+        const amount = 100;
+        const concept = 'comida' ;
+        await add_expense(mockMsg, amount, concept);
+
+        expect(appendExpense).toHaveBeenCalledWith(amount, concept);
+    });
 
 
 });
