@@ -21,6 +21,7 @@ function normalizeDateString(dateStr) {
     return match ? match[1] : null;
 }
 
+// Función para agregar un gasto a la hoja de cálculo
 async function appendExpense(amount, concepto) {
     const doc = await getAuthenticatedDoc();
     const sheet = doc.sheetsByIndex[0];
@@ -33,6 +34,7 @@ async function appendExpense(amount, concepto) {
     });
 }
 
+// Función para sumar los montos de una fecha específica
 async function sumAmountDates(targetDate) {
     const doc = await getAuthenticatedDoc();
     const sheet = doc.sheetsByIndex[0];

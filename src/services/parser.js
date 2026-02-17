@@ -105,7 +105,7 @@ async function parseMessage(msg) {
   return {
     intent: response.intent,
     amount: amountEntity?.resolution.value ?? amountFromText,
-    msg: concept,
+    concept: concept,
     score: response.score
   }
 }

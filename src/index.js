@@ -1,6 +1,7 @@
 const { trainNLP, parseMessage } = require('./services/parser');
 const { client } = require('./adapters/whatsapp');
-const { appendExpense, sumAmountDates } = require('./adapters/googleSheets');
+const { sumAmountDates } = require('./adapters/googleSheets');
+const {add_expense} = require('./actions/register');
 
 require('dotenv').config();
 
@@ -34,21 +35,16 @@ async function main() {
 
             console.log(`Procesando mensaje: ${msg.body}`);
             const res = await parseMessage(msg.body);
-            if (res && res.intent === 'gasto.register' && res.amount) {
-                try {
-                    await appendExpense(res.amount, res.msg);
-                    msg.reply(`Gasto registrado: ${res.amount} en ${res.msg}`);
-                    console.log("Se registró el gasto:", res.amount, res.msg);
-                } catch (error) {
-                    console.error('Error al registrar el gasto:', error);
-                    msg.reply('Hubo un error al registrar el gasto. Intenta nuevamente.');
-                }
+            if (res && res.intent === 'gasto.register' && res.amount && res.concept) {
+                
+                await add_expense(msg, res.amount, res.concept);
+
             } else if (res && res.intent === 'greeting.hello') {
                 //msg.reply("Hola fidel cola rota, ¿en qué puedo ayudarte? Puedo registrar gastos si me dices: \"gaste X en concepto\"");
                 msg.reply('¡Hola! ¿En qué puedo ayudarte? Puedo registrar gastos si me dices: "gaste X en concepto"');
-            }else if (res && res.intent === 'gasto.query') {
+            } else if (res && res.intent === 'gasto.query') {
                 let searchDate = new Date();
-                if(msg.body.toLowerCase().includes('ayer')){
+                if (msg.body.toLowerCase().includes('ayer')) {
                     searchDate.setDate(searchDate.getDate() - 1);
                 }
                 try {
@@ -56,7 +52,7 @@ async function main() {
                     const dateStr = searchDate.toLocaleDateString('es-AR');
                     msg.reply(`El total de gastos para ${dateStr} es: ${total}`);
                     console.log(`Total de gastos para ${dateStr}:`, total);
-                }catch(error){
+                } catch (error) {
                     console.error('Error al consultar los gastos:', error);
                     msg.reply('Hubo un error al consultar los gastos. Intenta nuevamente.');
                 }
