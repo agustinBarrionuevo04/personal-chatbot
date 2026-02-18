@@ -3,9 +3,9 @@ jest.mock('../../adapters/googleSheets', () => ({
 }));
 
 const { appendExpense } = require('../../adapters/googleSheets');
-const { add_expense } = require('../../actions/register');
+const { addExpense } = require('../../actions/register');
 
-describe('test add_expense function in the register module', () => {
+describe('test addExpense function in the register module', () => {
     let mockMsg;
     
     beforeEach(()=> {
@@ -17,7 +17,7 @@ describe('test add_expense function in the register module', () => {
         appendExpense.mockResolvedValue(true);
         const amount = 100;
         const concept = 'comida' ;
-        await add_expense(mockMsg, amount, concept);
+        await addExpense(mockMsg, amount, concept);
 
         expect(appendExpense).toHaveBeenCalledWith(amount, concept);
         expect(mockMsg.reply).toHaveBeenCalledWith(`Gasto registrado: ${amount} en ${concept}`);
@@ -28,7 +28,7 @@ describe('test add_expense function in the register module', () => {
         appendExpense.mockRejectedValue(error);
         const amount = 100;
         const concept = 'comida' ;
-        await add_expense(mockMsg, amount, concept);
+        await addExpense(mockMsg, amount, concept);
 
         expect(appendExpense).toHaveBeenCalledWith(amount, concept);
         expect(mockMsg.reply).toHaveBeenCalledWith('Hubo un error al registrar el gasto. Intenta nuevamente.');
@@ -37,7 +37,7 @@ describe('test add_expense function in the register module', () => {
     it('parameters validation', async () => {
         const amount = 100;
         const concept = 'comida' ;
-        await add_expense(mockMsg, amount, concept);
+        await addExpense(mockMsg, amount, concept);
 
         expect(appendExpense).toHaveBeenCalledWith(amount, concept);
     });

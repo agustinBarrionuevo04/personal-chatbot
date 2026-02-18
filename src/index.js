@@ -1,7 +1,7 @@
 const { trainNLP, parseMessage } = require('./services/parser');
 const { client } = require('./adapters/whatsapp');
-const { sumAmountDates } = require('./adapters/googleSheets');
-const {add_expense} = require('./actions/register');
+const { getAmount } = require('./actions/querys');
+const { addExpense } = require('./actions/register');
 
 require('dotenv').config();
 
@@ -34,28 +34,15 @@ async function main() {
             latestKnownTimestamp = Math.max(latestKnownTimestamp, msg.timestamp || latestKnownTimestamp);
 
             console.log(`Procesando mensaje: ${msg.body}`);
-            const res = await parseMessage(msg.body);
-            if (res && res.intent === 'gasto.register' && res.amount && res.concept) {
-                
-                await add_expense(msg, res.amount, res.concept);
 
-            } else if (res && res.intent === 'greeting.hello') {
-                //msg.reply("Hola fidel cola rota, ¿en qué puedo ayudarte? Puedo registrar gastos si me dices: \"gaste X en concepto\"");
+            const res = await parseMessage(msg.body);
+
+            if (res && res.intent === 'greeting.hello') {
                 msg.reply('¡Hola! ¿En qué puedo ayudarte? Puedo registrar gastos si me dices: "gaste X en concepto"');
+            } else if (res && res.intent === 'gasto.register' && res.amount && res.concept) {
+                await addExpense(msg, res.amount, res.concept);
             } else if (res && res.intent === 'gasto.query') {
-                let searchDate = new Date();
-                if (msg.body.toLowerCase().includes('ayer')) {
-                    searchDate.setDate(searchDate.getDate() - 1);
-                }
-                try {
-                    const total = await sumAmountDates(searchDate);
-                    const dateStr = searchDate.toLocaleDateString('es-AR');
-                    msg.reply(`El total de gastos para ${dateStr} es: ${total}`);
-                    console.log(`Total de gastos para ${dateStr}:`, total);
-                } catch (error) {
-                    console.error('Error al consultar los gastos:', error);
-                    msg.reply('Hubo un error al consultar los gastos. Intenta nuevamente.');
-                }
+                await getAmount(msg);
             }
         });
     });

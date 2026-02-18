@@ -1,6 +1,6 @@
 const { appendExpense } = require('../adapters/googleSheets');
 
-async function add_expense(msg, amount, concept) {
+async function addExpense(msg, amount, concept) {
     try {
         await appendExpense(amount, concept);
         msg.reply(`Gasto registrado: ${amount} en ${concept}`);
@@ -11,4 +11,4 @@ async function add_expense(msg, amount, concept) {
     }
 }
 
-module.exports = { add_expense };
+module.exports = { addExpense };
